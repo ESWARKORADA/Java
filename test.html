@@ -1,0 +1,101 @@
+import React, { useState, useEffect } from "react";
+
+const WORDS = ["apple", "grape", "melon", "peach", "berry"];
+const getRandomWord = () => WORDS[Math.floor(Math.random() * WORDS.length)];
+
+const WordleClone = () => {
+  const [word, setWord] = useState(getRandomWord);
+  const [guesses, setGuesses] = useState([]);
+  const [input, setInput] = useState("");
+  const [message, setMessage] = useState("");
+  const [gameOver, setGameOver] = useState(false);
+
+  const handleInputChange = (e) => {
+    setInput(e.target.value.toLowerCase());
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (input.length !== 5 || !WORDS.includes(input)) {
+      setMessage("Invalid word! Use a valid 5-letter word.");
+      return;
+    }
+    
+    const feedback = input.split("").map((letter, i) => {
+      if (word[i] === letter) return "green";
+      if (word.includes(letter)) return "yellow";
+      return "gray";
+    });
+
+    const newGuesses = [...guesses, { word: input, feedback }];
+    setGuesses(newGuesses);
+    setInput("");
+
+    if (input === word) {
+      setMessage("Congratulations! You guessed the word!");
+      setGameOver(true);
+    } else if (newGuesses.length === 6) {
+      setMessage(`Game Over! The word was "${word}".`);
+      setGameOver(true);
+    }
+  };
+
+  const handleNewGame = () => {
+    setWord(getRandomWord());
+    setGuesses([]);
+    setMessage("");
+    setGameOver(false);
+  };
+
+  return (
+    <div className="container">
+      <h1 className="title">Wordle Clone</h1>
+      <div className="grid">
+        {Array.from({ length: 6 }).map((_, i) => (
+          <div key={i} className="row">
+            {Array.from({ length: 5 }).map((_, j) => {
+              const guess = guesses[i]?.word[j] || "";
+              const color = guesses[i]?.feedback[j] || "border-gray-400";
+              return (
+                <div
+                  key={j}
+                  className={`cell ${color}`}
+                >
+                  {guess.toUpperCase()}
+                </div>
+              );
+            })}
+          </div>
+        ))}
+      </div>
+      {!gameOver && (
+        <form onSubmit={handleSubmit} className="form">
+          <input
+            type="text"
+            value={input}
+            onChange={handleInputChange}
+            maxLength={5}
+            className="input"
+            disabled={gameOver}
+          />
+          <button
+            type="submit"
+            className="button"
+            disabled={gameOver}
+          >
+            Submit
+          </button>
+        </form>
+      )}
+      <p className="message">{message}</p>
+      <button
+        onClick={handleNewGame}
+        className="button new-game"
+      >
+        New Game
+      </button>
+    </div>
+  );
+};
+
+export default WordleClone;
